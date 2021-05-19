@@ -3,12 +3,19 @@
 #include "PercentageStrategyByType.h"
 #include "StrategyContext.h"
 
+//команды:
+//set ext/file - установить стратегию по типу/файлу
+//show путь - посчитать и показать для указанной папки/файла
+//exit - выход
+
+
 int main(int argc, char* argv[])
 {
     enum Status
     {
         OK,
-        ERROR
+        ERROR,
+        EXIT
     } status = OK;
 
     QTextStream qcout(stdout);
@@ -22,10 +29,30 @@ int main(int argc, char* argv[])
 
         if (qcin.readLineInto(&line) && !line.isEmpty())
         {
-            QStringList args = line.split(' ');
+            QStringList args;
+            //между двойными скобками (если в пути к файлу есть пробелы)
+            bool betweenQuotes = false;
+
+            for (int i = 0; i < line.size(); ++i)
+            {
+                if (line[i] == '\"')
+                {
+                    betweenQuotes = !betweenQuotes;
+                }
+                else if (line[i] == ' ' && !betweenQuotes)
+                {
+                    args.append(line.left(i).toLower());
+                    line.remove(0, i + 1);
+                    i = -1;
+                }
+            }
+            args.append(line.toLower());
 
             QString arg = args.takeFirst();
             status = ERROR;
+
+            if (betweenQuotes)
+                break;
 
             if (arg == "set")
             {
@@ -80,6 +107,8 @@ int main(int argc, char* argv[])
 
                 status = OK;
             }
+            else if (arg == "exit")
+                status = EXIT;
 
             if (!args.isEmpty())
                 status = ERROR;
