@@ -21,7 +21,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="ViewLayout">
+    <layout class="QHBoxLayout" name="viewLayout">
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -39,7 +39,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="Strategy_label">
+      <widget class="QLabel" name="strategyLabel">
        <property name="text">
         <string>Strategy:</string>
        </property>
@@ -49,7 +49,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="Strategy_cbox">
+      <widget class="QComboBox" name="strategyComBox">
        <item>
         <property name="text">
          <string>Group by folder</string>
@@ -63,7 +63,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="sortBox">
+      <widget class="QCheckBox" name="sortCheckBox">
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
        </property>

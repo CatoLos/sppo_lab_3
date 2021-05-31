@@ -1,8 +1,8 @@
 #include <QWidget>
 #include <QFileSystemModel>
-#include <StrategyContext.h>
 #include <FileExplorerTableModel.h>
 #include <QItemSelection>
+#include "FilePercentageStrategy.h"
 
 namespace Ui
 {
@@ -24,21 +24,22 @@ public:
     };
 
     FileExplorer(QWidget* parent = nullptr, FileExplorer::StrategyType strat_type = StrategyType::byFolder);
+    ~FileExplorer();
 
 public slots:
-    //слот изменени¤ стратегии
-    void setGroupingStrategy(qint32 const& index);
-    //слот изменени¤ папки
+    //слот изменения стратегии
+    void setPercentageStrategy(qint32 const& index);
+    //слот изменения папки
     void folderChanged(const QItemSelection& selected, const QItemSelection& deselected);
     bool processFileSorting(int state);
 
 private:
 
-    QFileSystemModel* file_sistem;
+    QFileSystemModel* m_fileSystem;
     //контекст стратегий
-    StrategyContext strat_context;
-    FileExplorerTableModel* table_model;
+    FilePercentageStrategy* m_strategy;
+    FileExplorerTableModel* m_tableModel;
     //тукущий путь до выбранной папки
-    QString current_path;
+    QString m_currentPath;
     Ui::FileExplorer* ui;
 };

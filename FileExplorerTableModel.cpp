@@ -2,21 +2,21 @@
 #include <QLocale>
 #include <algorithm>
 
-FileExplorerTableModel::FileExplorerTableModel(QObject* parent, QVector<QPair<QString, uint64_t>> const& Files_size) :
+FileExplorerTableModel::FileExplorerTableModel(QObject* parent, QVector<QPair<QString, uint64_t>> const& filesData) :
     QAbstractTableModel(parent),
-    files_size(Files_size)
+    m_filesData(filesData)
 {}
 
 //обновление данных модели
-void FileExplorerTableModel::setFilesSize(QVector<QPair<QString, uint64_t>> const& Files_size)
+void FileExplorerTableModel::setFilesData(QVector<QPair<QString, uint64_t>> const& filesData)
 {
-    files_size = Files_size;
+    m_filesData = filesData;
 }
 
 void FileExplorerTableModel::sort()
 {
-    if (files_size.size() > 1)
-        std::sort(files_size.begin(), files_size.end() - 1, 
+    if (m_filesData.size() > 1)
+        std::sort(m_filesData.begin(), m_filesData.end() - 1,
             [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r) 
             { 
                 return l.second > r.second; 
@@ -25,14 +25,14 @@ void FileExplorerTableModel::sort()
 
 QVector<QPair<QString, uint64_t>>const& FileExplorerTableModel::getData()
 {
-    return files_size;
+    return m_filesData;
 }
 
 int FileExplorerTableModel::rowCount(const QModelIndex&) const
 {
-    //Если в папке были файлы, то в конец files_size всегда пишется общий размер папка
-    //Если файлов и вложенных папок в выбранной папки не было, тогда в files_size не пишется итоговый размер папки
-    return files_size.size();
+    //Если в папке были файлы, то в конец m_filesData всегда пишется общий размер папка
+    //Если файлов и вложенных папок в выбранной папки не было, тогда в m_filesData не пишется итоговый размер папки
+    return m_filesData.size();
 }
 
 int FileExplorerTableModel::columnCount(const QModelIndex&) const
@@ -64,27 +64,30 @@ QVariant FileExplorerTableModel::headerData(int section, Qt::Orientation orienta
 QVariant FileExplorerTableModel::data(const QModelIndex& index, int role) const
 {
     //проверка на корректность данных, по которым производится запрос
-    if (role == Qt::DisplayRole && index.isValid() && index.row() <= files_size.size())
+    if (role == Qt::DisplayRole && index.isValid() && index.row() < m_filesData.size())
     {
         switch (index.column())
         {
             //если нужна первая колонка
         case 0:
-            return QString(files_size[index.row()].first); //возвращаем название сущности
+            return QString(m_filesData[index.row()].first); //возвращаем название сущности
             //если нужна вторая колонка
         case 1:
             //если сущность не пустая
-            return QLocale(QLocale::English).formattedDataSize(files_size[index.row()].second);
+            return QLocale(QLocale::English).formattedDataSize(m_filesData[index.row()].second);
             //если нужна третья колонка
         case 2:
-            //процентное соотношение 
-            double percent = double(files_size[index.row()].second) / files_size[files_size.size() - 1].second * 100;
+            //процентное соотношение
 
-            //если сущность не пустая
-            if (files_size[index.row()].second > 0)
-                return (percent >= 1 ? QString::number(percent) : "< 1");
-            else
-                return QString();
+            double totalSize = m_filesData[m_filesData.size() - 1].second;
+            double percent = double(m_filesData[index.row()].second) / totalSize * 100;
+
+            if(totalSize > 0)
+            {
+                return (percent >= 0.01 ? QString::number(percent, 'f', 2) : "< 0.01");
+            }
+
+            return QString();
         }
     }
 

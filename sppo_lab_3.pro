@@ -12,7 +12,6 @@ SOURCES += \
         FilePercentageStrategy.cpp \
         PercentageStrategyByFile.cpp \
         PercentageStrategyByType.cpp \
-        StrategyContext.cpp \
         main.cpp
 
 # Default rules for deployment.
@@ -25,8 +24,7 @@ HEADERS += \
     FileExplorerTableModel.h \
     FilePercentageStrategy.h \
     PercentageStrategyByFile.h \
-    PercentageStrategyByType.h \
-    StrategyContext.h
+    PercentageStrategyByType.h
 
 FORMS += \
     FileExplorer.ui

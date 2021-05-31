@@ -12,10 +12,10 @@ class FileExplorerTableModel : public QAbstractTableModel
     Q_OBJECT
 public:
 
-    FileExplorerTableModel(QObject* parent = nullptr, QVector<QPair<QString, uint64_t>> const& Files_size = QVector<QPair<QString, uint64_t>>());
+    FileExplorerTableModel(QObject* parent = nullptr, QVector<QPair<QString, uint64_t>> const& filesData = QVector<QPair<QString, uint64_t>>());
 
     //обновление данных, которые хранятся в модели
-    void setFilesSize(QVector<QPair<QString, uint64_t>> const& Files_size);
+    void setFilesData(QVector<QPair<QString, uint64_t>> const& filesData);
     QVector<QPair<QString, uint64_t>> const& getData();
     void sort();
 
@@ -30,6 +30,6 @@ public:
 
 private:
     //данные модели
-    QVector<QPair<QString, uint64_t>> files_size;
+    QVector<QPair<QString, uint64_t>> m_filesData;
 };
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "FilePercentageStrategy.h"
 
-
 class PercentageStrategyByType : public FilePercentageStrategy
 {
 public:

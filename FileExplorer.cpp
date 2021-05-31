@@ -1,91 +1,97 @@
 #include <FileExplorer.h>
 #include "PercentageStrategyByFile.h"
 #include "PercentageStrategyByType.h"
-#include <ui_FileExplorer.h>
+#include "ui_FileExplorer.h"
 
 
 FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_type) :
     QWidget(parent),
     ui(new Ui::FileExplorer),
-    file_sistem(new QFileSystemModel(this)),
-    table_model(new FileExplorerTableModel(this))
+    m_fileSystem(new QFileSystemModel(this)),
+    m_tableModel(new FileExplorerTableModel(this))
 {
     //настраиваем UI
     ui->setupUi(this);
     //устанавливаем корневой путь в файловой модели
-    file_sistem->setRootPath(QDir::homePath());
+    m_fileSystem->setRootPath(QDir::homePath());
     //устанавливаем модель
-    ui->treeView->setModel(file_sistem);
+    ui->treeView->setModel(m_fileSystem);
     //устанавливаем ратяжение колонок в qtreeview по размеру содержимого
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     //устанавливаем модель
-    ui->tableView->setModel(table_model);
+    ui->tableView->setModel(m_tableModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->sortBox->setCheckState(Qt::CheckState::Checked);
+    ui->sortCheckBox->setCheckState(Qt::CheckState::Checked);
 
     //устанавливаем соответсвующую стратегию
     if (strat_type == StrategyType::byFolder)
-        strat_context.setStrategy(new PercentageStrategyByFile);
+        m_strategy = new PercentageStrategyByFile;
     else
-        strat_context.setStrategy(new PercentageStrategyByType);
+        m_strategy = new PercentageStrategyByType;
 
     //настраиваем сигнально-слотный механизм
-    connect(ui->Strategy_cbox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::setGroupingStrategy);
+    connect(ui->strategyComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::setPercentageStrategy);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileExplorer::folderChanged);
-    connect(ui->sortBox, &QCheckBox::stateChanged, this, &FileExplorer::processFileSorting);
+    connect(ui->sortCheckBox, &QCheckBox::stateChanged, this, &FileExplorer::processFileSorting);
 }
 
-void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSelection& deselected)
+FileExplorer::~FileExplorer()
+{
+    delete ui;
+}
+
+void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
 {
     //обновляем текущий путь до новой выбранной папки
-    current_path = file_sistem->filePath(selected.indexes()[0]);
+    m_currentPath = m_fileSystem->filePath(selected.indexes()[0]);
     //обновляем данные в модели
-    strat_context.calculate(current_path);
-    table_model->setFilesSize(strat_context.getData());
+    auto data = m_strategy->calculate(m_currentPath);
+    m_tableModel->setFilesData(data);
     //обновляем отображение данных модели
-    if (ui->sortBox->checkState() == Qt::CheckState::Checked)
-        table_model->sort();
+    if (ui->sortCheckBox->checkState() == Qt::CheckState::Checked)
+        m_tableModel->sort();
 
     //обновляем layout
-    emit table_model->layoutChanged();
+    emit m_tableModel->layoutChanged();
 }
 
 bool FileExplorer::processFileSorting(int state)
 {
     if (state == Qt::CheckState::Checked)
     {
-        table_model->sort();
-        table_model->layoutChanged();
+        m_tableModel->sort();
+        m_tableModel->layoutChanged();
         return true;
     }
 
     return false;
 }
 
-void FileExplorer::setGroupingStrategy(qint32 const& index)
+void FileExplorer::setPercentageStrategy(qint32 const& index)
 {
+    delete m_strategy;
     //устанавливаем соответсвующую страте
     switch (index)
     {
     case 0:
-        strat_context.setStrategy(new PercentageStrategyByFile());
+        m_strategy = new PercentageStrategyByFile();
         break;
     case 1:
-        strat_context.setStrategy(new PercentageStrategyByType());
+        m_strategy = new PercentageStrategyByType();
         break;
     }
 
     //если папка не выбрана, то выходим
-    if (current_path.isEmpty())
+    if (m_currentPath.isEmpty())
         return;
 
     //обновляем данные модели
-    strat_context.calculate(current_path);
-    table_model->setFilesSize(strat_context.getData());
+    auto data = m_strategy->calculate(m_currentPath);
+    m_tableModel->setFilesData(data);
     //обновляем содержимое
-    if (ui->sortBox->checkState() == Qt::CheckState::Checked)
-        table_model->sort();
+    if (ui->sortCheckBox->checkState() == Qt::CheckState::Checked)
+        m_tableModel->sort();
 
     //обновляем layout
-    emit table_model->layoutChanged();
+    emit m_tableModel->layoutChanged();
 }
