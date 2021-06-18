@@ -17,7 +17,9 @@ public:
     //обновление данных, которые хранятся в модели
     void setFilesData(QVector<QPair<QString, uint64_t>> const& filesData);
     QVector<QPair<QString, uint64_t>> const& getData();
-    void sort();
+
+    template<typename Pred>
+    void sort(Pred pred);
 
     //сколько строк нужно в таблице
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -28,8 +30,19 @@ public:
     //предоставление данные для каждой ячейки в таблице
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
+    void clear();
+
 private:
     //данные модели
     QVector<QPair<QString, uint64_t>> m_filesData;
 };
 
+template<typename Pred>
+void FileExplorerTableModel::sort(Pred pred)
+{
+    if (m_filesData.size() > 1)
+    {
+        std::sort(m_filesData.begin(), m_filesData.end() - 1, pred);
+        emit dataChanged(createIndex(0,0), createIndex(m_filesData.size() - 2, 2));
+    }
+}

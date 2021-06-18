@@ -10,17 +10,21 @@ FileExplorerTableModel::FileExplorerTableModel(QObject* parent, QVector<QPair<QS
 //обновление данных модели
 void FileExplorerTableModel::setFilesData(QVector<QPair<QString, uint64_t>> const& filesData)
 {
+    clear();
+
+    beginInsertRows(QModelIndex(), 0, filesData.size() - 1);
     m_filesData = filesData;
+    endInsertRows();
 }
 
-void FileExplorerTableModel::sort()
+void FileExplorerTableModel::clear()
 {
-    if (m_filesData.size() > 1)
-        std::sort(m_filesData.begin(), m_filesData.end() - 1,
-            [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r) 
-            { 
-                return l.second > r.second; 
-            });
+    if(!m_filesData.empty())
+    {
+        beginRemoveRows(QModelIndex(), 0, m_filesData.size() - 1);
+        m_filesData.clear();
+        endRemoveRows();
+    }
 }
 
 QVector<QPair<QString, uint64_t>>const& FileExplorerTableModel::getData()
@@ -80,10 +84,10 @@ QVariant FileExplorerTableModel::data(const QModelIndex& index, int role) const
             //процентное соотношение
 
             double totalSize = m_filesData[m_filesData.size() - 1].second;
-            double percent = double(m_filesData[index.row()].second) / totalSize * 100;
 
             if(totalSize > 0)
             {
+                double percent = double(m_filesData[index.row()].second) / totalSize * 100;
                 return (percent >= 0.01 ? QString::number(percent, 'f', 2) : "< 0.01");
             }
 

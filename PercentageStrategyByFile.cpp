@@ -17,24 +17,20 @@ QVector<QPair<QString, uint64_t>> PercentageStrategyByFile::calculate(QString co
     uint64_t totalSize = getTotalSize(path, filters);
     QFileInfo fileInf(path);
 
-
-    if (totalSize)
+    if (fileInf.isDir())
     {
-        if (fileInf.isDir())
+        QDirIterator it(fileInf.absoluteFilePath(), filters);
+        while (it.hasNext())
         {
-            QDirIterator it(fileInf.absoluteFilePath(), filters);
-            while (it.hasNext())
-            {
-                it.next();
-                auto file = it.fileInfo();
-                result.append(qMakePair(file.fileName(),
-                file.isDir() ? getTotalSize(file.absoluteFilePath(), filters) : file.size()));
-            }
+            it.next();
+            auto file = it.fileInfo();
+            result.append(qMakePair(file.fileName(),
+            file.isDir() ? getTotalSize(file.absoluteFilePath(), filters) : file.size()));
         }
-        else //если изначально не папка
-        {
-            result.append(qMakePair(fileInf.fileName(), (uint64_t)fileInf.size()));
-        }
+    }
+    else //если изначально не папка
+    {
+        result.append(qMakePair(fileInf.fileName(), (uint64_t)fileInf.size()));
     }
 
     //добавляем в конец общий размер все папки

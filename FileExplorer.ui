@@ -63,13 +63,24 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="sortCheckBox">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
+      <widget class="QLabel" name="sortLabel">
        <property name="text">
-        <string>Sort by size</string>
+        <string>Sorting:</string>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="sortComBox">
+       <item>
+        <property name="text">
+         <string>By size</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>By name</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>

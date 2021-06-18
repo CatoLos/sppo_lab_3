@@ -21,7 +21,6 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     //устанавливаем модель
     ui->tableView->setModel(m_tableModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->sortCheckBox->setCheckState(Qt::CheckState::Checked);
 
     //устанавливаем соответсвующую стратегию
     if (strat_type == StrategyType::byFolder)
@@ -32,7 +31,7 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     //настраиваем сигнально-слотный механизм
     connect(ui->strategyComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::setPercentageStrategy);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileExplorer::folderChanged);
-    connect(ui->sortCheckBox, &QCheckBox::stateChanged, this, &FileExplorer::processFileSorting);
+    connect(ui->sortComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::processFileSorting);
 }
 
 FileExplorer::~FileExplorer()
@@ -48,19 +47,23 @@ void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSele
     auto data = m_strategy->calculate(m_currentPath);
     m_tableModel->setFilesData(data);
     //обновляем отображение данных модели
-    if (ui->sortCheckBox->checkState() == Qt::CheckState::Checked)
-        m_tableModel->sort();
-
-    //обновляем layout
-    emit m_tableModel->layoutChanged();
+    processFileSorting(ui->sortComBox->currentIndex());
 }
 
-bool FileExplorer::processFileSorting(int state)
+bool FileExplorer::processFileSorting(int index)
 {
-    if (state == Qt::CheckState::Checked)
-    {
-        m_tableModel->sort();
-        m_tableModel->layoutChanged();
+    switch (index) {
+    case 0:
+        m_tableModel->sort([](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+                           {
+                               return l.second > r.second;
+                           });
+        return true;
+    case 1:
+        m_tableModel->sort([](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+                           {
+                               return l.first > r.first;
+                           });
         return true;
     }
 
@@ -89,9 +92,5 @@ void FileExplorer::setPercentageStrategy(qint32 const& index)
     auto data = m_strategy->calculate(m_currentPath);
     m_tableModel->setFilesData(data);
     //обновляем содержимое
-    if (ui->sortCheckBox->checkState() == Qt::CheckState::Checked)
-        m_tableModel->sort();
-
-    //обновляем layout
-    emit m_tableModel->layoutChanged();
+    processFileSorting(ui->sortComBox->currentIndex());
 }
