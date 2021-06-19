@@ -31,7 +31,6 @@ public slots:
     void setPercentageStrategy(qint32 const& index);
     //слот изменения папки
     void folderChanged(const QItemSelection& selected, const QItemSelection& deselected);
-    bool processFileSorting(int index);
 
 private:
 

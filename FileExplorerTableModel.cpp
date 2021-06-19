@@ -17,6 +17,34 @@ void FileExplorerTableModel::setFilesData(QVector<QPair<QString, uint64_t>> cons
     endInsertRows();
 }
 
+void FileExplorerTableModel::sort(int column, Qt::SortOrder order)
+{
+    Q_UNUSED(order);
+
+    if (m_filesData.size() > 1)
+    {
+       switch (column)
+       {
+       case 0:
+          std::sort(m_filesData.begin(), m_filesData.end() - 1,
+             [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+             {
+                return l.first > r.first;
+             });
+          break;
+       case 1:
+          std::sort(m_filesData.begin(), m_filesData.end() - 1,
+             [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+             {
+                return l.second > r.second;
+             });
+          break;
+       }
+
+        emit dataChanged(createIndex(0,0), createIndex(m_filesData.size() - 2, 2));
+    }
+}
+
 void FileExplorerTableModel::clear()
 {
     if(!m_filesData.empty())

@@ -31,7 +31,7 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     //настраиваем сигнально-слотный механизм
     connect(ui->strategyComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::setPercentageStrategy);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileExplorer::folderChanged);
-    connect(ui->sortComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::processFileSorting);
+    connect(ui->sortComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {m_tableModel->sort(index);});
 }
 
 FileExplorer::~FileExplorer()
@@ -47,27 +47,7 @@ void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSele
     auto data = m_strategy->calculate(m_currentPath);
     m_tableModel->setFilesData(data);
     //обновляем отображение данных модели
-    processFileSorting(ui->sortComBox->currentIndex());
-}
-
-bool FileExplorer::processFileSorting(int index)
-{
-    switch (index) {
-    case 0:
-        m_tableModel->sort([](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
-                           {
-                               return l.second > r.second;
-                           });
-        return true;
-    case 1:
-        m_tableModel->sort([](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
-                           {
-                               return l.first > r.first;
-                           });
-        return true;
-    }
-
-    return false;
+    m_tableModel->sort(ui->sortComBox->currentIndex());
 }
 
 void FileExplorer::setPercentageStrategy(qint32 const& index)
@@ -92,5 +72,5 @@ void FileExplorer::setPercentageStrategy(qint32 const& index)
     auto data = m_strategy->calculate(m_currentPath);
     m_tableModel->setFilesData(data);
     //обновляем содержимое
-    processFileSorting(ui->sortComBox->currentIndex());
+    m_tableModel->sort(ui->sortComBox->currentIndex());
 }
