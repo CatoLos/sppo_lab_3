@@ -12,9 +12,12 @@ void FileExplorerTableModel::setFilesData(QVector<QPair<QString, uint64_t>> cons
 {
     clear();
 
-    beginInsertRows(QModelIndex(), 0, filesData.size() - 1);
-    m_filesData = filesData;
-    endInsertRows();
+    if(!filesData.empty())
+    {
+        beginInsertRows(QModelIndex(), 0, filesData.size() - 1);
+        m_filesData = filesData;
+        endInsertRows();
+    }
 }
 
 void FileExplorerTableModel::sort(int column, Qt::SortOrder order)
