@@ -1,5 +1,5 @@
 
-QT += core widgets gui
+QT += core charts widgets gui
 CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -7,6 +7,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        Adapter.cpp \
         FileExplorer.cpp \
         FileExplorerTableModel.cpp \
         FilePercentageStrategy.cpp \
@@ -20,9 +21,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    Adapter.h \
     FileExplorer.h \
     FileExplorerTableModel.h \
     FilePercentageStrategy.h \
+    Observer.h \
     PercentageStrategyByFile.h \
     PercentageStrategyByType.h
 

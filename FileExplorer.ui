@@ -20,7 +20,7 @@
    <string>FileExplorer</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="2">
+   <item row="0" column="0" colspan="3">
     <layout class="QHBoxLayout" name="viewLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -63,6 +63,37 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="displayLabel">
+       <property name="text">
+        <string>Display:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="displayComBox">
+       <item>
+        <property name="text">
+         <string>Table</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Bar chart</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Pie chart</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Stacked chart</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="sortLabel">
        <property name="text">
         <string>Sorting:</string>
@@ -73,12 +104,12 @@
       <widget class="QComboBox" name="sortComBox">
        <item>
         <property name="text">
-         <string>By size</string>
+         <string>By name</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>By name</string>
+         <string>By size</string>
         </property>
        </item>
       </widget>
@@ -89,10 +120,60 @@
     <widget class="QTreeView" name="treeView"/>
    </item>
    <item row="1" column="1">
-    <widget class="QTableView" name="tableView"/>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="page">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QTableView" name="tableView">
+         <property name="sortingEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_2">
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QChartView" name="chartView"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>QtCharts</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

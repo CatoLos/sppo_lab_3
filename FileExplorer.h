@@ -3,6 +3,7 @@
 #include <FileExplorerTableModel.h>
 #include <QItemSelection>
 #include "FilePercentageStrategy.h"
+#include "Observer.h"
 
 namespace Ui
 {
@@ -31,13 +32,17 @@ public slots:
     void setPercentageStrategy(qint32 const& index);
     //слот изменения папки
     void folderChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    void changeDisplayView(int index);
+    void changeSorting(int index);
 
 private:
 
     QFileSystemModel* m_fileSystem;
     //контекст стратегий
     FilePercentageStrategy* m_strategy;
-    FileExplorerTableModel* m_tableModel;
+    //FileExplorerTableModel* m_tableModel;
+    QVector<FilesObserver*> m_observers;
+    FilesObserver* m_observer;
     //тукущий путь до выбранной папки
     QString m_currentPath;
     Ui::FileExplorer* ui;

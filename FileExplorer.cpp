@@ -1,14 +1,14 @@
 #include <FileExplorer.h>
 #include "PercentageStrategyByFile.h"
 #include "PercentageStrategyByType.h"
+#include "Adapter.h"
 #include "ui_FileExplorer.h"
 
 
 FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_type) :
     QWidget(parent),
     ui(new Ui::FileExplorer),
-    m_fileSystem(new QFileSystemModel(this)),
-    m_tableModel(new FileExplorerTableModel(this))
+    m_fileSystem(new QFileSystemModel(this))
 {
     //настраиваем UI
     ui->setupUi(this);
@@ -18,9 +18,17 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     ui->treeView->setModel(m_fileSystem);
     //устанавливаем ратяжение колонок в qtreeview по размеру содержимого
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->chartView->setStyleSheet("border: 1px solid gray");
     //устанавливаем модель
-    ui->tableView->setModel(m_tableModel);
+    auto tableModel = new FileExplorerTableModel(this);
+    ui->tableView->setModel(tableModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    m_observers.push_back(new TableAdapter(tableModel));
+    m_observers.push_back(new BarChartAdapter(ui->chartView));
+    m_observers.push_back(new PieChartAdapter(ui->chartView));
+    m_observers.push_back(new StackedChartAdapter(ui->chartView));
+    m_observer = m_observers.front();
 
     //устанавливаем соответсвующую стратегию
     if (strat_type == StrategyType::byFolder)
@@ -31,12 +39,16 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     //настраиваем сигнально-слотный механизм
     connect(ui->strategyComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::setPercentageStrategy);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileExplorer::folderChanged);
-    connect(ui->sortComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {m_tableModel->sort(index);});
+    connect(ui->displayComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::changeDisplayView);
+    connect(ui->sortComBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileExplorer::changeSorting);
 }
 
 FileExplorer::~FileExplorer()
 {
     delete ui;
+    delete m_strategy;
+    delete m_fileSystem;
+    qDeleteAll(m_observers);
 }
 
 void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -45,9 +57,26 @@ void FileExplorer::folderChanged(const QItemSelection& selected, const QItemSele
     m_currentPath = m_fileSystem->filePath(selected.indexes()[0]);
     //обновляем данные в модели
     auto data = m_strategy->calculate(m_currentPath);
-    m_tableModel->setFilesData(data);
-    //обновляем отображение данных модели
-    m_tableModel->sort(ui->sortComBox->currentIndex());
+    m_observer->update(data, ui->sortComBox->currentIndex());
+}
+
+void FileExplorer::changeDisplayView(int index)
+{
+   if (index >= 0 && index < m_observers.size())
+   {
+      auto const& data = m_observer->data();
+      m_observer = m_observers[index];
+      m_observer->update(data, ui->sortComBox->currentIndex());
+      ui->stackedWidget->setCurrentIndex(index == 0 ? 0 : 1);
+   }
+}
+
+void FileExplorer::changeSorting(int index)
+{
+   if (index >= 0 && index < 2)
+   {
+      m_observer->sort(index);
+   }
 }
 
 void FileExplorer::setPercentageStrategy(qint32 const& index)
@@ -70,7 +99,5 @@ void FileExplorer::setPercentageStrategy(qint32 const& index)
 
     //обновляем данные модели
     auto data = m_strategy->calculate(m_currentPath);
-    m_tableModel->setFilesData(data);
-    //обновляем содержимое
-    m_tableModel->sort(ui->sortComBox->currentIndex());
+    m_observer->update(data, ui->sortComBox->currentIndex());
 }

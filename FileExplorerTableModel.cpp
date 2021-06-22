@@ -27,16 +27,22 @@ void FileExplorerTableModel::sort(int column, Qt::SortOrder order)
        {
        case 0:
           std::sort(m_filesData.begin(), m_filesData.end() - 1,
-             [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+             [&order](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
              {
-                return l.first > r.first;
+                if (order == Qt::AscendingOrder)
+                    return l.first < r.first;
+                else
+                    return l.first > r.first;
              });
           break;
-       case 1:
+       default:
           std::sort(m_filesData.begin(), m_filesData.end() - 1,
-             [](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
+             [&order](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
              {
-                return l.second > r.second;
+                if (order == Qt::AscendingOrder)
+                    return l.second < r.second;
+                else
+                    return l.second > r.second;
              });
           break;
        }
