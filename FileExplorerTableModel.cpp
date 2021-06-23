@@ -33,9 +33,9 @@ void FileExplorerTableModel::sort(int column, Qt::SortOrder order)
              [&order](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
              {
                 if (order == Qt::AscendingOrder)
-                    return l.first < r.first;
+                    return l.first.localeAwareCompare(r.first) == -1;
                 else
-                    return l.first > r.first;
+                    return l.first.localeAwareCompare(r.first) == 1;
              });
           break;
        default:

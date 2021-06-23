@@ -27,7 +27,7 @@ public:
     //предоставление данные для каждой ячейки в таблице
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void sort(int column, Qt::SortOrder order = Qt::DescendingOrder) override;
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
     void clear();
 

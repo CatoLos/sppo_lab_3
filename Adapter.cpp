@@ -53,7 +53,7 @@ void ChartAdapter::sort(int sortIndex)
       std::sort(m_data.begin(), m_data.end() - 1, [sortIndex](const QPair<QString, uint64_t>& l, const QPair<QString, uint64_t>& r)
          {
             if (sortIndex == 0)
-               return l.first > r.first;
+               return l.first.localeAwareCompare(r.first) == -1;
             else
                return l.second > r.second;
          });
