@@ -12,7 +12,7 @@ TableAdapter::~TableAdapter()
 void TableAdapter::update(const QVector<QPair<QString, uint64_t>>& data, int sortIndex)
 {
    m_model->setFilesData(data);
-   m_model->sort(sortIndex);
+   sort(sortIndex);
 }
 
 const QVector<QPair<QString, uint64_t>>& TableAdapter::data()
@@ -22,7 +22,9 @@ const QVector<QPair<QString, uint64_t>>& TableAdapter::data()
 
 void TableAdapter::sort(int sortIndex)
 {
-   m_model->sort(sortIndex);
+   // если сортировка по имени, то возрастающий лексикографический порядок
+   // если сортировка по размеру, то порядок убывающий
+   m_model->sort(sortIndex, (sortIndex == 0 ? Qt::AscendingOrder : Qt::DescendingOrder));
 }
 
 ChartAdapter::ChartAdapter(QChart* chart, QChartView* view) :
@@ -62,17 +64,13 @@ void ChartAdapter::sort(int sortIndex)
    }
 }
 
-StackedChartAdapter::StackedChartAdapter(QChartView* view) :
-   ChartAdapter(new QChart, view)
-{}
-
-void StackedChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& data)
+void ChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& data)
 {
    m_chart->removeAllSeries();
 
    if (!data.empty())
    {
-      const auto series = new QStackedBarSeries;
+      QAbstractSeries* series = makeSeries();
       //суммарный процент
       float total_percent = 0.0;
       //лэйбл для диаграмм
@@ -82,7 +80,7 @@ void StackedChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& d
       bool finish = false;
       float totalSize = data[data.size() - 1].second;
 
-      if(totalSize)
+      if (totalSize > 0)
       {
          // Проходим по всем данным
          for (size_t i = 0; !finish && i < data.size() - 1; ++i)
@@ -101,12 +99,8 @@ void StackedChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& d
                label = "others - " + QString::number(percent, 'g', 3) + "%";
                finish = true;
             }
-            // Создаём set
-            QBarSet* set = new QBarSet(label);
-            // Заполняем значениями (процентными соотношениями)
-            set->append(percent);
-            // Добавляем в серию
-            series->append(set);
+
+            appendToSeries(series, label, percent);
          }
 
          // Добавляем серию в QChart
@@ -119,120 +113,60 @@ void StackedChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& d
 
       m_view->setChart(m_chart);
    }
+}
+
+StackedChartAdapter::StackedChartAdapter(QChartView* view) :
+   ChartAdapter(new QChart, view)
+{}
+
+QAbstractSeries* StackedChartAdapter::makeSeries()
+{
+   return new QStackedBarSeries();
+}
+
+void StackedChartAdapter::appendToSeries(QAbstractSeries* series, const QString& label, float percent)
+{
+   // Создаём set
+   QBarSet* set = new QBarSet(label);
+   // Заполняем значениями (процентными соотношениями)
+   set->append(percent);
+   // Добавляем в серию
+   static_cast<QStackedBarSeries*>(series)->append(set);
 }
 
 BarChartAdapter::BarChartAdapter(QChartView* view) :
    ChartAdapter(new QChart, view)
 {}
 
-void BarChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& data)
+QAbstractSeries* BarChartAdapter::makeSeries()
 {
-   m_chart->removeAllSeries();
+   return new QBarSeries();
+}
 
-   if (!data.empty())
-   {
-      const auto series = new QBarSeries;
-      //суммарный процент
-      float total_percent = 0.0;
-      //лэйбл для диаграмм
-      QString label;
-      //процент текущего файла
-      float percent = 0;
-      bool finish = false;
-      float totalSize = data[data.size() - 1].second;
-
-      if(totalSize > 0)
-      {
-         // Проходим по всем данным
-         for (size_t i = 0; !finish && i < data.size() - 1; ++i)
-         {
-            //если суммарный процент меньше 95
-            if (total_percent <= 95.0)
-            {
-               percent = float(data[i].second) / totalSize * 100;
-               total_percent += percent;
-               // Выбираем имена и процентное соотношение
-               label = data[i].first + " - " + QString::number(percent, 'g', 3) + "%";
-            }
-            else
-            {
-               percent = 100.0 - total_percent;
-               label = "others - " + QString::number(percent, 'g', 3) + "%";
-               finish = true;
-            }
-            // Создаём set
-            QBarSet* set = new QBarSet(label);
-            // Заполняем значениями (процентными соотношениями)
-            set->append(percent);
-            // Добавляем в серию
-            series->append(set);
-         }
-
-         // Добавляем серию в QChart
-         m_chart->addSeries(series);
-         // Выставляем тему
-         m_chart->setTheme(QChart::ChartTheme::ChartThemeQt);
-         // Говорим отображать легенду справа
-         m_chart->legend()->setAlignment(Qt::AlignRight);
-      }
-
-      m_view->setChart(m_chart);
-   }
+void BarChartAdapter::appendToSeries(QAbstractSeries* series, const QString& label, float percent)
+{
+   // Создаём set
+   QBarSet* set = new QBarSet(label);
+   // Заполняем значениями (процентными соотношениями)
+   set->append(percent);
+   // Добавляем в серию
+   static_cast<QBarSeries*>(series)->append(set);
 }
 
 PieChartAdapter::PieChartAdapter(QChartView* view) :
    ChartAdapter(new QChart, view)
 {}
 
-void PieChartAdapter::updateChart(const QVector<QPair<QString, uint64_t>>& data)
+QAbstractSeries* PieChartAdapter::makeSeries()
 {
-   m_chart->removeAllSeries();
+   return new QPieSeries();
+}
 
-   if (!data.empty())
-   {
-      const auto series = new QPieSeries;
-      //суммарный процент
-      float total_percent = 0.0;
-      //лэйбл для диаграмм
-      QString label;
-      //процент текущего файла
-      float percent = 0;
-      bool finish = false;
-      float totalSize = data[data.size() - 1].second;
-
-      if(totalSize > 0)
-      {
-         // Проходим по всем данным
-         for (size_t i = 0; !finish && i < data.size() - 1; ++i)
-         {
-            //если суммарный процент меньше 95
-            if (total_percent <= 95.0)
-            {
-               percent = float(data[i].second) / data[data.size() - 1].second * 100;
-               total_percent += percent;
-               // Выбираем имена и процентное соотношение
-               label = data[i].first + " - " + QString::number(percent, 'g', 3) + "%";
-            }
-            else
-            {
-               percent = 100.0 - total_percent;
-               label = "others - " + QString::number(percent, 'g', 3) + "%";
-               finish = true;
-            }
-            // Создаём set
-            QPieSlice* slice = new QPieSlice(label, percent);
-            slice->setValue(percent);
-            // Добавляем в серию
-            series->append(slice);
-         }
-
-         // Добавляем серию в QChart
-         m_chart->addSeries(series);
-         // Выставляем тему
-         m_chart->setTheme(QChart::ChartTheme::ChartThemeQt);
-         // Говорим отображать легенду справа
-         m_chart->legend()->setAlignment(Qt::AlignRight);
-      }
-      m_view->setChart(m_chart);
-   }
+void PieChartAdapter::appendToSeries(QAbstractSeries* series, const QString& label, float percent)
+{
+   // Создаём slice
+   QPieSlice* slice = new QPieSlice(label, percent);
+   slice->setValue(percent);
+   // Добавляем в серию
+   static_cast<QPieSeries*>(series)->append(slice);
 }

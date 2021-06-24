@@ -34,8 +34,10 @@ public:
 
 protected:
 
-   //обновить график
-   virtual void updateChart(const QVector<QPair<QString, uint64_t>>& data) = 0;
+   //обновить график (главный шаблонный метод)
+   void updateChart(const QVector<QPair<QString, uint64_t>>& data);
+   virtual QAbstractSeries* makeSeries() = 0;
+   virtual void appendToSeries(QAbstractSeries* series, const QString& label, float percent) = 0;
 
    QChart* m_chart;
    QChartView* m_view;
@@ -49,7 +51,9 @@ public:
    StackedChartAdapter(QChartView* view);
 
 private:
-   void updateChart(const QVector<QPair<QString, uint64_t>>& data) override;
+
+   QAbstractSeries* makeSeries() override;
+   void appendToSeries(QAbstractSeries* series, const QString& label, float percent) override;
 };
 
 class BarChartAdapter : public ChartAdapter
@@ -59,7 +63,9 @@ public:
    BarChartAdapter(QChartView* view);
 
 private:
-   void updateChart(const QVector<QPair<QString, uint64_t>>& data) override;
+
+   QAbstractSeries* makeSeries() override;
+   void appendToSeries(QAbstractSeries* series, const QString& label, float percent) override;
 };
 
 class PieChartAdapter : public ChartAdapter
@@ -69,5 +75,7 @@ public:
    PieChartAdapter(QChartView* view);
 
 private:
-   void updateChart(const QVector<QPair<QString, uint64_t>>& data) override;
+
+   QAbstractSeries* makeSeries() override;
+   void appendToSeries(QAbstractSeries* series, const QString& label, float percent) override;
 };
