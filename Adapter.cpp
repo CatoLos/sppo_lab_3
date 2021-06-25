@@ -1,26 +1,26 @@
 #include "Adapter.h"
 
-TableAdapter::TableAdapter(FileExplorerTableModel* model) :
+TableMediator::TableMediator(FileExplorerTableModel* model) :
    m_model(model)
 {}
 
-TableAdapter::~TableAdapter()
+TableMediator::~TableMediator()
 {
    delete m_model;
 }
 
-void TableAdapter::update(const QVector<QPair<QString, uint64_t>>& data, int sortIndex)
+void TableMediator::update(const QVector<QPair<QString, uint64_t>>& data, int sortIndex)
 {
    m_model->setFilesData(data);
    sort(sortIndex);
 }
 
-const QVector<QPair<QString, uint64_t>>& TableAdapter::data()
+const QVector<QPair<QString, uint64_t>>& TableMediator::data()
 {
    return m_model->getData();
 }
 
-void TableAdapter::sort(int sortIndex)
+void TableMediator::sort(int sortIndex)
 {
    // если сортировка по имени, то возрастающий лексикографический порядок
    // если сортировка по размеру, то порядок убывающий

@@ -24,7 +24,7 @@ FileExplorer::FileExplorer(QWidget* parent, FileExplorer::StrategyType strat_typ
     ui->tableView->setModel(tableModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    m_observers.push_back(new TableAdapter(tableModel));
+    m_observers.push_back(new TableMediator(tableModel));
     m_observers.push_back(new BarChartAdapter(ui->chartView));
     m_observers.push_back(new PieChartAdapter(ui->chartView));
     m_observers.push_back(new StackedChartAdapter(ui->chartView));

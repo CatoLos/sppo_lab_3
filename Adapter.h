@@ -2,12 +2,12 @@
 #include "Observer.h"
 
 //адаптер для таблицы
-class TableAdapter : public FilesObserver
+class TableMediator : public FilesObserver
 {
 public:
 
-   TableAdapter(FileExplorerTableModel* model);
-   virtual ~TableAdapter();
+   TableMediator(FileExplorerTableModel* model);
+   virtual ~TableMediator();
    //обновить данные
    void update(const QVector<QPair<QString, uint64_t>>& data, int sortIndex) override;
    //получить текущие данные
